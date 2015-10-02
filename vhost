@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Create new Virtual Hosts on the fly
+
+VERSION="0.0.1"
+
+#
+# Function to create the new virtual host
+# The script always creates a .local site.
+# `vhost example` results in a site called example.local
+# 
+# @param name - the name of the new site
+#
+create() {
+  # Check if the file already exists and cancel the creation of
+  # a new Virtual Host
+  if [ -f "/etc/apache2/sites-available/$1.local.conf" ]; then
+    echo "Virtual Host $1.local.conf already exists."
+    exit 1
+  else
+    echo "Creating host $1"
+    
+    echo "Copying template from /etc/apache2/sites-available/template.conf"
+    sudo cp /etc/apache2/sites-available/template.conf /tmp/template.conf
+    
+    echo "Replacing Template variables with $1"
+    sudo sed -i s/{{CUSTOM}}/$1/g /tmp/template.conf
+    
+    echo "Moving generated template to /etc/apache2/sites-available"
+    sudo mv /tmp/template.conf /etc/apache2/sites-available/$1.local.conf
+    
+    # This is mainly to prevent errors during `apache2 reload`. 
+    echo "Creating Document Root"
+    mkdir /var/www/html/$1 && echo "Welcome to $1.local" > /var/www/html/$1/index.html
+
+    echo "Activating site"
+    sudo a2ensite $1.local.conf
+
+    echo "Reloading Apache Server"
+    sudo service apache2 reload
+    
+    # append to /etc/hosts using tee
+    # tee reads from the stdout and adds it to a file. -a is append 
+    echo "Adding new site to /etc/hosts"
+    echo "127.0.0.1 $1.local" | sudo tee -a /etc/hosts
+
+    echo "Your site is now available at http://$1.local"
+  fi
+}
+
+#
+# Print a usage and help message to the screen.
+#
+usage() {
+  echo "USAGE:
+  Grab the default template from https://github.com/kevingimbel/vhost/template.conf
+
+  Edit the file if you want. Every occurence of {{CUSTOM}} will be replaced with whatever you 
+  pass as parameter to the vhost command, e.g. vhost my-site will replace all {{CUSTOM}} with my-site
+  and generate a site called my-site.local"
+  
+  echo " "
+
+  echo "COMMANDS:
+  --help    | -h         display this help and usage message
+  --usage   | -u         display this help and usage message
+  --version | -v         print the script version to the command line
+  "
+}
+
+version() {
+  echo "
+  vhost - by Kevin Gimbel <http://kevingimbel.com>
+  
+  Version: $VERSION
+  Documentation: https://github.com/kevingimbel/vhost
+  "  
+}
+
+# call functions defined above based on passed parameter
+if [ $1 ]
+  then
+    # Here we support all kinds of getting help and usage messages.
+    # Some use a word, some a single hypen and others two hypens.
+    # since I HATE when I get this wrong I support all of them because
+    # why not?
+    case $1 in
+      '-t')
+        test test
+        ;;
+
+      'help' | '--help' | '-h')
+        usage
+        ;;
+
+      'usage' | '--usage' | '-u')
+        usage
+        ;;
+
+      'version' | '--version' | '-v')
+        version
+        ;;
+      *)
+        create $1
+        ;;
+    esac
+  exit 1
+fi

@@ -1,0 +1,67 @@
+# vhost
+
+`vhost` is a command line utility for creating new Virtual Hosts for the Apache Server. It was build out of laziness. 
+
+### Installation
+
+Clone this repositiory to some place on your computer. 
+
+```sh
+$ cd ~/workspace/github
+$ git clone b.com:kevingimbel/vhost.git
+```
+
+Next symlink the `template.conf` to `/etc/apache2/sites-available` - this file is
+the template for all future Virtual Hosts. You'll also need to make vhost
+executable and then symlink the vhost the executable to some place that's in
+your `$PATH`, e.g. `~/local/bin`.
+
+So, inside the Repository do the following
+```sh
+$ (sudo) ln -s template.conf /etc/apache2/sites-available
+$ chmod +x vhost
+$ ln -s vhost ~/local/bin
+```
+
+Now you should be able to run `vhost -h` to get a help and usage message. 
+
+### Usage
+
+Creating a new Virtual Host is now as easy as calling `vhost test` - this will
+generate a Virtual Host configuration file named `test.local.conf` inside
+`/etc/apache2/sites-available/`, add a Document Root to `/var/www/html/` named
+`test`, generate a index.html inside the new Document Root and add a new Host
+entry to the `/etc/hosts` file. The script also reloads Apache to activate the
+new configuration.
+
+That's it, you can now visit [http://test.local](http://test.local/) and see
+your shiny new Virtual Host in action.
+
+### Modification
+
+You can modify the `template.conf` file as you wish by changing default Document
+Roots, Server Names or whatsoever. Inside the file is a variable names
+`{{CUSTOM}}`. This variable is replaced by whatever you pass as an argument to
+`vhost`. 
+
+So let's say you want to publish your sites at `.dev` instead of
+`.local` and your default Document Root should be on `~/workspace`. Your
+template file would then look like this.
+
+```
+<VirtualHost *:80>
+  	ServerAdmin webmaster@localhost
+  	ServerName {{CUSTOM}}.dev
+
+  	DocumentRoot /home/$USER/workspace/{{CUSTOM}}
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+  	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+   <Directory "/home/$USER/workspace/{{CUSTOM}}/">
+     AllowOverride all
+     Require all granted
+   </Directory>
+</VirtualHost>
+```
+
