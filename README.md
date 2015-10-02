@@ -8,7 +8,7 @@ Clone this repositiory to some place on your computer.
 
 ```sh
 $ cd ~/workspace/github
-$ git clone b.com:kevingimbel/vhost.git
+$ git clone git@github.com:kevingimbel/vhost.git
 ```
 
 Next symlink the `template.conf` to `/etc/apache2/sites-available` - this file is
