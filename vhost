@@ -52,11 +52,11 @@ create() {
 # Print a usage and help message to the screen.
 #
 usage() {
-  echo "USAGE:
+  echo "USAGE `basename $0`:
   Grab the default template from https://github.com/kevingimbel/vhost/template.conf
 
   Edit the file if you want. Every occurence of {{CUSTOM}} will be replaced with whatever you 
-  pass as parameter to the vhost command, e.g. vhost my-site will replace all {{CUSTOM}} with my-site
+  pass as parameter to the vhost command, e.g. `basename $0` my-site will replace all {{CUSTOM}} with my-site
   and generate a site called my-site.local"
   
   echo " "
@@ -65,6 +65,7 @@ usage() {
   --help    | -h         display this help and usage message
   --usage   | -u         display this help and usage message
   --version | -v         print the script version to the command line
+  --test    | -t         create a virtual host called test 
   "
 }
 
@@ -74,7 +75,7 @@ version() {
   
   Version: $VERSION
   Documentation: https://github.com/kevingimbel/vhost
-  "  
+  " 
 }
 
 # call functions defined above based on passed parameter
@@ -86,20 +87,17 @@ if [ $1 ]
     # why not?
     case $1 in
       '-t')
-        test test
+        create test
         ;;
 
-      'help' | '--help' | '-h')
-        usage
-        ;;
-
-      'usage' | '--usage' | '-u')
+      'help' | '--help' | '-h' | 'usage' | '--usage' | '-u')
         usage
         ;;
 
       'version' | '--version' | '-v')
         version
         ;;
+
       *)
         create $1
         ;;
