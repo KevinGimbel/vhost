@@ -2,13 +2,53 @@
 
 # Create new Virtual Hosts on the fly
 
-VERSION="0.0.1"
+VERSION="0.0.2"
+GOOD=""
+BAD=""
 
-#
+test() {
+  printf "Checking for functions, files and directories.\n\n" 
+  if hash apache2 2> /dev/null; then
+    GOOD+="Apache executable (apache2) is available.\n"
+  else
+    BAD+="Can't find Apache executable (apache2).\n"
+  fi
+  
+  if [ -d "/etc/apache2/" ]; then
+    GOOD="Can enter Apache2 Directory.\n"
+  else
+    BAD=" Cannot enter Apache2 Directory.\n"
+  fi
+
+  if [ -f "/etc/hosts" ]; then
+    GOOD+="Can see hosts file.\n"
+  else
+    BAD+="Cannot see hosts file.\n"
+  fi
+  
+  printf "Report:\n"
+  printf "================================\n"
+
+  # Print GOOD if not empty
+  if [ -n "$GOOD" ]; then
+    printf "$GOOD"
+  fi
+
+  # Print bad if not empty
+  if [ -n "$BAD" ]; then
+    printf "$BAD"
+  fi
+
+  # Print success if BAD is empty
+  if [ -z "$BAD" ]; then
+    printf '%s\n' "You're good to use $(basename $0) now!"
+  fi
+}
+
 # Function to create the new virtual host
 # The script always creates a .local site.
 # `vhost example` results in a site called example.local
-# 
+#
 # @param name - the name of the new site
 #
 create() {
@@ -19,17 +59,17 @@ create() {
     exit 1
   else
     echo "Creating host $1"
-    
+
     echo "Copying template from /etc/apache2/sites-available/template.conf"
     sudo cp /etc/apache2/sites-available/template.conf /tmp/template.conf
-    
+
     echo "Replacing Template variables with $1"
     sudo sed -i s/{{CUSTOM}}/$1/g /tmp/template.conf
-    
+
     echo "Moving generated template to /etc/apache2/sites-available"
     sudo mv /tmp/template.conf /etc/apache2/sites-available/$1.local.conf
-    
-    # This is mainly to prevent errors during `apache2 reload`. 
+
+    # This is mainly to prevent errors during `apache2 reload`.
     echo "Creating Document Root"
     mkdir /var/www/html/$1 && echo "Welcome to $1.local" > /var/www/html/$1/index.html
 
@@ -38,13 +78,18 @@ create() {
 
     echo "Reloading Apache Server"
     sudo service apache2 reload
-    
+
     # append to /etc/hosts using tee
-    # tee reads from the stdout and adds it to a file. -a is append 
+    # tee reads from the stdout and adds it to a file. -a is append
     echo "Adding new site to /etc/hosts"
     echo "127.0.0.1 $1.local" | sudo tee -a /etc/hosts
 
     echo "Your site is now available at http://$1.local"
+
+    # Test if we can sent a notification
+    if hash notify-send 2>/dev/null; then
+      notify-send -t 250 "Virtual Host created!" "Created host $1, available as http://$1.local" --icon=dialog-information
+    fi
   fi
 }
 
@@ -55,28 +100,87 @@ usage() {
   echo "USAGE `basename $0`:
   Grab the default template from https://github.com/kevingimbel/vhost/template.conf
 
-  Edit the file if you want. Every occurence of {{CUSTOM}} will be replaced with whatever you 
+  Edit the file if you want. Every occurence of {{CUSTOM}} will be replaced with whatever you
   pass as parameter to the vhost command, e.g. `basename $0` my-site will replace all {{CUSTOM}} with my-site
   and generate a site called my-site.local"
-  
+
   echo " "
 
   echo "COMMANDS:
   --help    | -h         display this help and usage message
   --usage   | -u         display this help and usage message
   --version | -v         print the script version to the command line
-  --test    | -t         create a virtual host called test 
+
+  -t                     create a virtual host called test
+  -r                     remove a host, second argument is the Host Name
+  --test | --check       Does a simple check of the system for files, functions
+                         and directories
   "
 }
 
 version() {
   echo "
   vhost - by Kevin Gimbel <http://kevingimbel.com>
-  
+
   Version: $VERSION
   Documentation: https://github.com/kevingimbel/vhost
-  " 
+  "
 }
+
+#
+# Function to remove a Host and its configuration.
+# This function SHOULD NEVER be called before doing
+# a conditional check (see remove() below).
+#
+removeHost() {
+  echo "Going to remove Host and Configuration for '$1'"
+  # Remove the Host's Document Root (can be symlink OR folder)
+  echo "Removing Document Root in /var/www/html/$1"
+  sudo rm -r /var/www/html/$1
+  # Disable the host (removes symlink)
+  echo "Disabling Site Configuration for $1.local.conf"
+  sudo a2dissite $1.local.conf
+  # Remove the configuration file
+  echo "Removing configuration file from /etc/apache2/sites-available/"
+  sudo rm /etc/apache2/sites-available/$1.local.conf
+  echo "Removing Site $1.local from /etc/hosts"
+  # replace the host config with an empty string.
+  sudo sed -i 's/127\.0\.0\.1 $1\.local//g' /etc/hosts
+
+  # Reload the Server
+  sudo service apache2 reload
+
+  # If we can sent notifications, do so!
+  if hash notify-send 2> /dev/null; then
+    notify-send -t 250 "Virtual Host deleted" "Removed Virtual Host configuration $1.local.conf" --icon=dialog-information
+  fi
+}
+
+remove() {
+  if [ -f "/etc/apache2/sites-available/$1.local.conf" ]; then
+    echo "Attempting to remove Virtual Host $1 ($1.local.conf)"
+    echo "Is this correct? [Y/n]"
+
+    read answer
+
+    case $answer in
+      'y' | 'Y' | 'yes' | 'Yes')
+        removeHost $1
+        ;;
+      'n' | 'N' | 'no' | 'No')
+        echo "Removal of Virtual Host $1 cancelled."
+        exit 1
+        ;;
+
+      *)
+        echo "Exiting. Answer '$answer' not recognized"
+        exit 0
+    esac
+  else
+    echo "Configuration for $1 does not exist."
+  fi
+}
+
 
 # call functions defined above based on passed parameter
 if [ $1 ]
@@ -88,6 +192,14 @@ if [ $1 ]
     case $1 in
       '-t')
         create test
+        ;;
+
+      '-r')
+        remove $2
+        ;;
+
+      '--test' | '--check')
+        test
         ;;
 
       'help' | '--help' | '-h' | 'usage' | '--usage' | '-u')
