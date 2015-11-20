@@ -71,7 +71,7 @@ create() {
 
     # This is mainly to prevent errors during `apache2 reload`.
     echo "Creating Document Root"
-    mkdir /var/www/html/$1 && echo "Welcome to $1.local" > /var/www/html/$1/index.html
+    sudo mkdir /var/www/html/$1 && echo "Welcome to $1.local" > /var/www/html/$1/index.html
 
     echo "Activating site"
     sudo a2ensite $1.local.conf
