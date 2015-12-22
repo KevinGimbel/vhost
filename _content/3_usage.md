@@ -26,3 +26,30 @@ You can click the link to open the new Virtual Host and see the default page.
 To remove a host run vhost -r name, so for the test host run vhost -r test. The script will prompt you to confirm the deletion before doing anything.
 
 For more see vhost --usage.
+
+### Template
+
+vhost comes with a default template that is used to create new apache configuration files. Inside the file is a variable name `{{CUSTOM}}` that is replaced with whatever is specified as name when running `vhost name`. You can adjust this template as you need, as long as it is name `template.conf` and is located inside `/etc/apache2/sites-available`. Below is an example of creating SSL-only hosts with a `.dev` domain.
+
+```conf
+<VirtualHost *:443>
+    ServerAdmin webmaster@localhost
+    ServerName {{CUSTOM}}.dev
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/{{CUSTOM}}.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/{{CUSTOM}}.key
+
+    DocumentRoot /var/www/html/{{CUSTOM}}
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+   <Directory "/var/www/html/{{CUSTOM}}/">
+     AllowOverride all
+     Require all granted
+   </Directory>
+</VirtualHost>
+```
+
+This assumes, however, that you create the SSL Certificate and Key inside the `/etc/apache2/ssl` directory. As of now vhost cannot create self-signed SSL certificates.
