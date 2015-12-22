@@ -1,5 +1,7 @@
 # vhost
 
+[![Join the chat at https://gitter.im/kevingimbel/vhost](https://badges.gitter.im/kevingimbel/vhost.svg)](https://gitter.im/kevingimbel/vhost?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 `vhost` is a command line utility for creating new Virtual Hosts for the Apache Server. It was build out of laziness.
 
 **NOTE:** `vhost` has only been tested on Ubuntu 14.04 running Apache 2.4.7! On other Linux Distributions most used programms (`rm`, `cp`, `sed`, `sudo`) should be available. It could happen that things go bad and you break your local Server. Be warned!
