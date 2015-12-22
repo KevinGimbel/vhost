@@ -1,0 +1,20 @@
+---
+layout: compress
+---
+
+{% include header.html %}
+
+<main role="content" class="content">
+{% for section in site.content %}
+<section class="card">
+  <header class="card-header">
+    <h3 class="h2" id="#{{ section.in_page_link }}">{{ section.title }}</h3>
+  </header>
+  <article class="card-content">
+    {{ section.content }}
+  </article>
+</section>
+{% endfor %}
+</main>
+
+{% include footer.html %}

@@ -1,0 +1,78 @@
+@import url(https://fonts.googleapis.com/css?family=Inconsolata:400,700);
+@import "_config";
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+html, body {
+  font-family: 'Inconsolata', monospace;
+  color:$color--default-font;
+  background: #eee;
+  font-weight: 400;
+}
+
+a {
+  color: #2196F3;
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+
+  &:hover {
+    color: #3F51B5;
+    font-weight: bold;
+  }
+}
+
+
+h2, .h2 {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.header,
+.footer {
+  width: 100%;
+  padding: 4rem;
+  background: $color--secondary-font;
+  color: $color--secondary;
+}
+
+p > code {
+  background: #ddd;
+  padding: 0.15rem;
+  border-radius: 3px;
+}
+
+p + p {
+  margin:1.25rem 0;
+}
+
+.card {
+  margin: 0 auto;
+  max-width: $max-width;
+  width: 100%;
+  background: #fff;
+
+  &:first-of-type {
+    margin-top: 2rem;
+  }
+  &:last-of-type {
+    margin-bottom: 2rem;
+  }
+}
+
+.card-header,
+.card-content {
+  padding: 2rem;
+}
+
+.card-header {
+  background: $color--secondary;
+  color: $color--secondary-font;
+}
+
+.footer {
+  font-size: .9rem;
+  padding: 2rem;
+}

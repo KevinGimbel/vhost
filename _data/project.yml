@@ -1,0 +1,13 @@
+- accentcolor: '#FFEB3B'
+  twitter_description: 'vhost is a command line tool for creating new Virtual Hosts for the Apache Web Server.'
+  search_description: 'vhost is a cli (command line interface) for creating virtual hosts for the Apache Web Server. It makes enabling, removing and adding hosts as easy as calling one command.'
+  keywords: 'apache, server, virtual host, configuration, cli, command line, tool, web, development, automation'
+  title: 'vhost'
+  name: 'vhost'
+  sub_title: 'virtual host creation on the fly'
+  url: 'vhost'
+  repo_url: 'https://github.com/kevingimbel/vhost'
+  gitter: 'https://gitter.com/kevingimbel/vhost'
+  author:
+    name: 'Kevin Gimbel'
+    url: 'http://kevingimbel.com'

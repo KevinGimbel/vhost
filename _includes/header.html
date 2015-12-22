@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ site.data.project[0].title }} {% if site.data.project[0].sub_title %} &mdash; {{site.data.project[0].sub_title}} {% endif %}</title>
+    <meta name="description" content="{{site.data.project[0].search_description}}">
+    <meta name="keywords" content="{{site.data.project[0].keywords}}">
+    <meta name="theme-color" content="{{site.data.project[0].accentcolor}}">
+    <meta name="viewport" content="width=device-width">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@_kevinatari">
+    <meta name="twitter:domain" content="http://kevingimbel.com/{{site.data.project[0].url}}">
+    <meta name="twitter:title" content="{{ site.data.project[0].title }}">
+    <meta name="twitter:description" content="{{site.data.project[0].twitter_description}}">
+
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+</head>
+<body>
+  <header class="stage header" id="site-header">
+  <h1>{{site.data.project[0].title}}</h1>
+  <h2>{{site.data.project[0].sub_title}}</h2>
+</header>

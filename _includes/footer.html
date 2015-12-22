@@ -1,0 +1,7 @@
+<footer class="footer" role="contentinfo">
+<p>{{site.data.project[0].name}} is created and maintained by <a href="{{site.data.project[0].author.url}}">{{site.data.project[0].author.name}}</a>.
+<a href="{{site.data.project[0].repo_url}}">GitHub Repository</a>
+{% if site.data.project[0].gitter %}
+| <a href="{{site.data.project[0].gitter}}">Gitter Channel</a></p>
+{% endif %}
+</footer>
