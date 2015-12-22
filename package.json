@@ -1,8 +1,8 @@
 {
-  "name": "jekyll-project-page-starter",
-  "description": "A Jekyll based project page starter kit.",
+  "name": "vhost-project-page",
+  "description": "A Jekyll based project page for the vhost CLI",
   "author": "Kevin Gimbel",
-  "repository": "https://github.com/kevingimbel/jekyll-project-page-starter",
+  "repository": "https://github.com/kevingimbel/vhost",
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-autoprefixer": "^3.0.2",
