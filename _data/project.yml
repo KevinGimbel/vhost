@@ -7,7 +7,7 @@
   sub_title: 'virtual host creation on the fly'
   url: 'vhost'
   repo_url: 'https://github.com/kevingimbel/vhost'
-  gitter: 'https://gitter.com/kevingimbel/vhost'
+  gitter: 'https://gitter.im/kevingimbel/vhost'
   author:
     name: 'Kevin Gimbel'
     url: 'http://kevingimbel.com'
