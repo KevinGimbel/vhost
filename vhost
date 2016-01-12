@@ -24,9 +24,9 @@ test() {
   fi
   
   if [ -d "/etc/apache2/" ]; then
-    GOOD="$CHECKSIGN""Can enter Apache2 Directory.\n"
+    GOOD+="$CHECKSIGN""Can enter Apache2 Directory.\n"
   else
-    BAD="$CROSS""Cannot enter Apache2 Directory.\n"
+    BAD+="$CROSS""Cannot enter Apache2 Directory.\n"
   fi
 
   if [ -f "/etc/hosts" ]; then
