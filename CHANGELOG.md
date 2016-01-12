@@ -1,3 +1,10 @@
+# 0.0.3 - 2016-01-12
+### Added
+
+* Colored output for test functiontion
+* Check (✓) and Cross (❌) signs to test output
+* custom error log directories in `/var/log/apache2` for every host
+
 # 0.0.2 - 2015-10-08
 ### Added
 * `remove` and `removeHost` function. `remove` handles the user input and

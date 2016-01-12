@@ -2,28 +2,37 @@
 
 # Create new Virtual Hosts on the fly
 
-VERSION="0.0.2"
+VERSION="0.0.3"
 GOOD=""
 BAD=""
+
+# Color Variables and escaping hell
+GREEN="\e[;92m"
+RED="\e[;31m"
+BLUE="\e[;94m"
+RESET="\e[;0m"
+
+CHECKSIGN="$GREEN✓$RESET "
+CROSS="$RED❌$RESET "
 
 test() {
   printf "Checking for functions, files and directories.\n\n" 
   if hash apache2 2> /dev/null; then
-    GOOD+="Apache executable (apache2) is available.\n"
+    GOOD+="$CHECKSIGN""Apache executable (apache2) is available.\n"
   else
-    BAD+="Can't find Apache executable (apache2).\n"
+    BAD+="$CROSS""Can't find Apache executable (apache2).\n"
   fi
   
   if [ -d "/etc/apache2/" ]; then
-    GOOD="Can enter Apache2 Directory.\n"
+    GOOD="$CHECKSIGN""Can enter Apache2 Directory.\n"
   else
-    BAD=" Cannot enter Apache2 Directory.\n"
+    BAD="$CROSS""Cannot enter Apache2 Directory.\n"
   fi
 
   if [ -f "/etc/hosts" ]; then
-    GOOD+="Can see hosts file.\n"
+    GOOD+="$CHECKSIGN""Can see hosts file.\n"
   else
-    BAD+="Cannot see hosts file.\n"
+    BAD+="$CROSS""Cannot see hosts file.\n"
   fi
   
   printf "Report:\n"
@@ -31,11 +40,13 @@ test() {
 
   # Print GOOD if not empty
   if [ -n "$GOOD" ]; then
+    echo -e "$GREEN""Passed tests: $RESET"
     printf "$GOOD"
   fi
 
   # Print bad if not empty
   if [ -n "$BAD" ]; then
+    echo -e "$RED""Looks like there are some errors:""$RESET"
     printf "$BAD"
   fi
 
@@ -71,7 +82,13 @@ create() {
 
     # This is mainly to prevent errors during `apache2 reload`.
     echo "Creating Document Root"
-    sudo mkdir /var/www/html/$1 && sudo echo "Welcome to $1.local" > /var/www/html/$1/index.html
+    sudo mkdir /var/www/html/$1
+    sudo touch /var/www/html/$1/index.html
+    sudo echo "Welcome to $1.local" > /var/www/html/$1/index.html
+    
+    echo "Creating log directory"
+    sudo mkdir -p /var/log/apache2/$1.local
+    
 
     echo "Activating site"
     sudo a2ensite $1.local.conf
@@ -119,8 +136,8 @@ usage() {
 }
 
 version() {
-  echo "
-  vhost - by Kevin Gimbel <http://kevingimbel.com>
+  echo -e "
+  vhost - by Kevin Gimbel <$BLUE""http://kevingimbel.com$RESET>
 
   Version: $VERSION
   Documentation: https://github.com/kevingimbel/vhost
@@ -145,7 +162,7 @@ removeHost() {
   sudo rm /etc/apache2/sites-available/$1.local.conf
   echo "Removing Site $1.local from /etc/hosts"
   # replace the host config with an empty string.
-  sudo sed -i 's/127\.0\.0\.1 $1\.local//g' /etc/hosts
+  sudo sed -i 's/127.0.0.1 $1\.local//g' /etc/hosts
 
   # Reload the Server
   sudo service apache2 reload

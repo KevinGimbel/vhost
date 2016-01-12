@@ -66,8 +66,8 @@ template file would then look like this.
 
   	DocumentRoot /home/$USER/workspace/{{CUSTOM}}
 
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-  	CustomLog ${APACHE_LOG_DIR}/access.log combined
+    ErrorLog /var/log/apache2/{{CUSTOM}}/error.log
+    CustomLog $/var/log/apache2/{{CUSTOM}}/access.log combined
 
    <Directory "/home/$USER/workspace/{{CUSTOM}}/">
      AllowOverride all
