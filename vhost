@@ -84,7 +84,7 @@ create() {
     echo "Creating Document Root"
     sudo mkdir /var/www/html/$1
     sudo touch /var/www/html/$1/index.html
-    sudo echo "Welcome to $1.local" > /var/www/html/$1/index.html
+    echo "Welcome to $1.local" | sudo tee -a /var/www/html/$1/index.html
     
     echo "Creating log directory"
     sudo mkdir -p /var/log/apache2/$1.local
