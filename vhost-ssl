@@ -1,0 +1,274 @@
+#!/bin/bash
+#
+# create ssl certs for vhost
+#
+
+# script variables
+version="0.0.1"
+author="Kevin Gimbel"
+author_url="<http://kevingimbel.com>"
+github_url="https://github.com/kevingimbel/vhost"
+github_issues="$github_url/issues"
+
+# Default values for key generation
+default_out="/etc/ssl/private"
+key_default_name="apache.key"
+cert_default_name=""
+vhost_ssl_key_file=""
+vhost_ssl_cert_dir=""
+program_name=$(basename "$0")
+
+# Color Variables and escaping hell
+green="\e[;92m"
+red="\e[;31m"
+blue="\e[;94m"
+reset="\e[;0m"
+
+# Check sign and cross sign
+checksign="$green✓$reset "
+cross="$red❌$reset "
+
+# Read the runtime config if available
+if [ -e "$HOME/.vhostrc" ]; then
+  source "$HOME/.vhostrc"
+else
+  echo -e "$cross" "Cannot read vhost config file $blue~/.vhostrc$reset"
+fi
+
+# Print out a message why this script needs sudo/root privileges
+info() {
+  printf "%s\n" \
+  "Why root privileges?" \
+  "When creating SSL certificates or keys the openssl command must be run as " \
+  "root user (or sudoer on Debian based systems)." \
+  "" \
+  "If you happen to know a better way please file an issue on Github" \
+  "at $github_issues" \
+  "Please write [vhost-ssl] inside the title of your issue."
+  exit
+}
+
+# Print out version information
+version() {
+  printf "%s\n" "Version $version" \
+  "by $author $author_url" \
+  "" \
+  "Report Issues on $github_issues" \
+  "Please write '[vhost-ssl]' as first word inside the title of your issue."
+  exit
+}
+
+# Print out usage information
+usage() {
+  printf "%s\n" \
+  "Usage: $program_name [options [arg]]" \
+  "Script to create SSL keys and certificates." \
+  "" \
+  "Options:" \
+
+  echo "
+    -u,--usage  & Show usage message
+    -h,--help   & Show help message for command, e.g. $program_name -c --help
+    -v,--version & Show version and author info
+    -i,--info    & Show info about root privileges
+    -c,--cert [str]    & Name of the certificate to be created
+    -o,--out [str]    & Output directory for key file
+    -k,--key [str]    & Create a key file, pass name as argument
+  " | column -s\& -t
+
+  printf "%s\n" "" \
+  "Run '$program_name COMMAND --help' for more information on a command." \
+  "For example '$program_name -c --help'"
+  exit
+}
+
+# check if the user who executes the script is root / a sudoer
+check_executing_user() {
+  # Needs to be root, exit otherwise
+  if [[ ! $EUID -eq 0 ]]; then
+    echo -e "$cross""This script must be run as a root user. Run '$program_name -info' to see why."
+    exit 1
+  fi
+}
+
+# Check if all things are set up correctly
+check_environment() {
+  # Exit if the variables are not set correctly.
+  if [ -z "$vhost_ssl_key_file" ] && [ -z "$vhost_ssl_cert_dir" ]; then
+    echo -e "$cross""Unable to find $green\$vhost_ssl_key_file$reset or $green\$vhost_ssl_cert_dir$reset variable. Please setup your environment."
+    echo -e "See$blue vhost --env$reset to list your runtime variables."
+    exit
+  fi
+}
+
+# Check if there is key file
+check_key_file() {
+  if [ ! -f "$vhost_ssl_key_file" ]; then
+    echo -e "$cross""Unable to read SSL key in $vhost_ssl_key_file."
+    echo "Do you want to create a key now? (y/n)"
+    read answer
+
+    case $answer in
+      'y' | 'Y' | 'yes' | 'Yes')
+
+        # Read user input
+        echo -e "Generating new key. Default values are shown in brackets. Hit enter to use them."
+        echo -e "Where do you want to store the private key? [$default_out]"
+        read key_path
+
+        echo -e "Enter the key name (without .key): [$key_default_name]"
+        read key_name
+
+        # Assign default values if the user did not enter anything.
+        if [ -z "$key_name" ]; then
+          key_name=$key_default_name
+        fi
+
+        if [ -z "$key_path" ]; then
+          key_path=$default_out
+        fi
+
+        # Create the new key file
+        printf "$blue%s\n" "Creating new key in $key_path/key_name.key"
+        exit
+        generate_key $key_path $key_name.key
+        ;;
+
+      *)
+      printf "%s\n" "Abort key generation."
+      exit
+    esac
+  fi
+}
+
+# generate a key file
+generate_key() {
+  # Generate the key
+  openssl genrsa -out "$1/$2" 2048
+  # Check if it was created
+  if [ ! -f "$1/$2" ]; then
+    echo -e "$cross""Unable to create key file"
+  else
+    echo -e "$checksign""Done! New Key generated in file $1/$2"
+  fi
+}
+
+# generate a new certificate
+generate_cert() {
+  out=$1
+  cert=$2
+
+  # Set out to the default out directory for certs
+  if [ -z "$use_out_dir" ]; then
+    out="$vhost_ssl_cert_dir"
+  fi
+
+  printf "%s\n" "Creating SSL certificate $cert.crt in $out, using key file $vhost_ssl_key_file"
+  printf "%s\n" "You will be prompted some questions from the openssl tool. Answer them and create your new self-signed SSL Certificate."
+
+  # create the new SSL certificate
+  openssl req -new -x509 -key "$vhost_ssl_key_file" -days 365 -sha256 -out "$out/$cert.crt"
+
+  printf "%s\n" "Created certificate in $out/$cert.crt"
+}
+
+run_tests() {
+  check_executing_user
+  check_environment
+  check_key_file
+}
+
+main() {
+  # perform a set of checks
+  run_tests
+
+  # This issue is already caught above yet it is here just to be sure
+  if [ -z "$vhost_ssl_cert_dir" ] & [ -z "$vhost_ssl_key_file" ]; then
+    printf "%s\g" "$cross\It looks the SSL Certificate and Key file are not defined."
+    exit
+  fi
+
+  # Check if we want to generate a key
+  if [ ! -z "$generate_key" ]; then
+    generate_key "$default_out" "$key_default_name.key"
+  fi
+
+  # Check if we want to generate a cert
+  if [ ! -z "$generate_cert" ]; then
+    generate_cert "$default_out" "$cert_default_name"
+  fi
+}
+
+show_help() {
+  cmd="$1"
+  case $cmd in
+    '-c' | '--cert' | 'cert')
+      printf "%s\n" \
+      "Usage: $program_name -c certificate_name " \
+      "Sets the certifcate name for the certifcate to be created" \
+      "Do not add the .cert extension"
+      ;;
+    '-o' | '--out' | 'out')
+      printf "%s\n" \
+      "Usage: $program_name -o directory" \
+      "Sets the output directory where the key should be stored"
+      ;;
+    '-k' | '--key' | 'key')
+      printf "%s\n" \
+      "Sets the name of the new key file to be created" \
+      "Do not add the .key extension"
+      ;;
+    *)
+    echo -e "$cross""Unable to find command $cmd"
+  esac
+  exit
+}
+
+if [ "--help" = "$2" ] || [ "-h" = "$2" ]; then
+  show_help "$1"
+fi
+
+# Read in all the arguments as long as there are any
+while (( "$#" )); do
+  arg=$1
+
+  case $arg in
+
+    '-u' | '--usage')
+      usage
+      ;;
+
+    '-i' | '--info')
+      info
+      ;;
+
+    '-u' | '--usage')
+      usage
+      ;;
+
+    '-v' | '--version')
+      version
+      ;;
+
+    '-k' | '--key')
+      generate_key="true"
+      key_default_name="$2"
+      ;;
+
+    '-o' | '--out')
+      use_out_dir="true"
+      default_out="$2"
+      ;;
+
+    '-c' | '--cert')
+      generate_cert="true"
+      cert_default_name="$2"
+      ;;
+  esac
+# Shift arguments, this way all arguments can be operated on before
+# the main function is running.
+shift
+done
+
+# Run the main function after reading the inputs.
+main
