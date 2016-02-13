@@ -1,0 +1,2 @@
+vhost_ssl_cert_dir="/etc/ssl/certs"
+vhost_ssl_key_file="/etc/ssl/private/apache.key"

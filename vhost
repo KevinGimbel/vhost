@@ -144,6 +144,27 @@ version() {
   "
 }
 
+env() {
+  echo -e "
+  Environment:
+
+  $(basename $0) supports a few runtime or environment variables. These can be
+  stored in a $BLUE~/.vhostrc$RESET file or can be set in a .bashrc,
+  .bash_profile or any other environemt file that is read once the terminal is
+  initialized.
+
+  Currently supported variables: 
+  Name            Description
+  VHOST_SSL_KEY   Path to the private key for ssl cert generation with vhost-ssl
+  VHOST_SSL_CERT  Folder to store SSL certificates inside.
+
+  Examples: 
+  export VHOST_SSL_KEY=\"/etc/ssl/private/apache.key\"
+  export VHOST_SSL_CERT=\"/etc/ssl/certs\"
+  "  
+  
+}
+
 #
 # Function to remove a Host and its configuration.
 # This function SHOULD NEVER be called before doing
@@ -209,6 +230,9 @@ if [ $1 ]
     case $1 in
       '-t')
         create test
+        ;;
+      '-e' | '--env' | 'env')
+        env
         ;;
 
       '-r')
