@@ -16,13 +16,13 @@ CHECKSIGN="$GREEN✓$RESET "
 CROSS="$RED❌$RESET "
 
 test() {
-  printf "Checking for functions, files and directories.\n\n" 
+  printf "Checking for functions, files and directories.\n\n"
   if hash apache2 2> /dev/null; then
     GOOD+="$CHECKSIGN""Apache executable (apache2) is available.\n"
   else
     BAD+="$CROSS""Can't find Apache executable (apache2).\n"
   fi
-  
+
   if [ -d "/etc/apache2/" ]; then
     GOOD+="$CHECKSIGN""Can enter Apache2 Directory.\n"
   else
@@ -34,7 +34,7 @@ test() {
   else
     BAD+="$CROSS""Cannot see hosts file.\n"
   fi
-  
+
   printf "Report:\n"
   printf "================================\n"
 
@@ -85,10 +85,10 @@ create() {
     sudo mkdir /var/www/html/$1
     sudo touch /var/www/html/$1/index.html
     echo "Welcome to $1.local" | sudo tee -a /var/www/html/$1/index.html
-    
+
     echo "Creating log directory"
     sudo mkdir -p /var/log/apache2/$1.local
-    
+
 
     echo "Activating site"
     sudo a2ensite $1.local.conf
@@ -145,24 +145,23 @@ version() {
 }
 
 env() {
-  echo -e "
-  Environment:
+  echo -e "  Environment:
 
   $(basename $0) supports a few runtime or environment variables. These can be
   stored in a $BLUE~/.vhostrc$RESET file or can be set in a .bashrc,
   .bash_profile or any other environemt file that is read once the terminal is
-  initialized.
+  initialized."
+  echo ""
+  echo "  Currently supported variables:
+  Name & Description
+  vhost_ssl_key_file & Path to the private key for ssl cert generation with vhost-ssl
+  vhost_ssl_cert_dir & Folder to store SSL certificates inside.
+  " | column -s\& -t
+  echo ""
+  printf "  %s\n" "Examples .vhostrc file:" \
+  "vhost_ssl_key_file=\"/etc/ssl/private/apache.key\"" \
+  "vhost_ssl_cert_dir=\"/etc/ssl/certs\""
 
-  Currently supported variables: 
-  Name            Description
-  VHOST_SSL_KEY   Path to the private key for ssl cert generation with vhost-ssl
-  VHOST_SSL_CERT  Folder to store SSL certificates inside.
-
-  Examples: 
-  export VHOST_SSL_KEY=\"/etc/ssl/private/apache.key\"
-  export VHOST_SSL_CERT=\"/etc/ssl/certs\"
-  "  
-  
 }
 
 #
