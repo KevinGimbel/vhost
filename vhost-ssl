@@ -86,7 +86,7 @@ usage() {
 check_executing_user() {
   # Needs to be root, exit otherwise
   if [[ ! $EUID -eq 0 ]]; then
-    echo -e "$cross""This script must be run as a root user. Run '$program_name -info' to see why."
+    echo -e "$cross""This script must be run as a root user. Run '$program_name --info' to see why."
     exit 1
   fi
 }
