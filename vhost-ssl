@@ -143,6 +143,16 @@ check_key_file() {
 
 # generate a key file
 generate_key() {
+  # Ask before overwriting an existing key. Overwriting an existing key can break virtual hosts!
+  if [ -f "$1/$2" ]; then
+    echo -e "Attempt to overwrite existing key in $1/$2. This might break existing virtual hosts."
+    echo -e "Continue? [Y/n]: "
+    read answer
+    if [ "$answer" != "Y" ]; then
+      echo -e "Abort key overwirte."
+      exit 0
+    fi
+  fi
   # Generate the key
   openssl genrsa -out "$1/$2" 2048
   # Check if it was created
@@ -190,7 +200,7 @@ main() {
 
   # Check if we want to generate a key
   if [ ! -z "$generate_key" ]; then
-    generate_key "$default_out" "$key_default_name.key"
+    generate_key "$default_out" "$new_key_name.key"
   fi
 
   # Check if we want to generate a cert
@@ -252,7 +262,7 @@ while (( "$#" )); do
 
     '-k' | '--key')
       generate_key="true"
-      key_default_name="$2"
+      new_key_name="$2"
       ;;
 
     '-o' | '--out')
